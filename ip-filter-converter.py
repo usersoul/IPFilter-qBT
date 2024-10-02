@@ -1,5 +1,7 @@
 import re
 import ipaddress
+import requests
+from requests.exceptions import RequestException
 
 def convert_ipv6(ip):
     return ipaddress.IPv6Address(ip).exploded
@@ -28,14 +30,26 @@ def process_ip_list(ip_list):
                 pass  # Skip invalid IPv6 addresses
     return processed
 
+def fetch_ip_list(urls):
+    for url in urls:
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return response.text.splitlines()
+        except RequestException as e:
+            print(f"Error fetching from {url}: {e}")
+    raise Exception("Failed to fetch IP list from all provided URLs")
+
 def main():
-    input_filename = input("Please enter the name of your IP list file (e.g., ip_list.txt): ")
+    urls = [
+        "https://raw.githubusercontent.com/PBH-BTN/BTN-Collected-Rules/main/combine/all.txt",
+        "https://bcr.pbh-btn.ghorg.ghostchu-services.top/combine/all.txt",
+        "https://fastly.jsdelivr.net/gh/PBH-BTN/BTN-Collected-Rules@master/combine/all.txt"
+    ]
     output_filename = 'ipfilter.dat'
 
     try:
-        with open(input_filename, 'r', encoding='utf-8') as f:
-            ip_list = [line.strip() for line in f if line.strip()]
-
+        ip_list = fetch_ip_list(urls)
         filtered_ips = process_ip_list(ip_list)
 
         with open(output_filename, 'w', encoding='utf-8') as f:
@@ -44,8 +58,6 @@ def main():
 
         print(f"IP filter file has been created as '{output_filename}'")
 
-    except FileNotFoundError:
-        print(f"Error: The input file '{input_filename}' was not found.")
     except Exception as e:
         print(f"An error occurred: {e}")
 
