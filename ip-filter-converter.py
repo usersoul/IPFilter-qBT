@@ -16,7 +16,7 @@ def process_ip_list(ip_list):
                     network = ipaddress.IPv4Network(line, strict=False)
                     processed.append(f"{network.network_address + 1}-{network.broadcast_address - 1}")
                 else:
-                    processed.append(line)
+                    processed.append(line + "-" + line)
             except ValueError:
                 pass  # Skip invalid IPv4 addresses
         elif ':' in line:  # IPv6
@@ -25,7 +25,7 @@ def process_ip_list(ip_list):
                     network = ipaddress.IPv6Network(line, strict=False)
                     processed.append(f"{convert_ipv6(network.network_address)}-{convert_ipv6(network.broadcast_address)}")
                 else:
-                    processed.append(convert_ipv6(line))
+                    processed.append(convert_ipv6(line) + "-" + convert_ipv6(line))
             except ipaddress.AddressValueError:
                 pass  # Skip invalid IPv6 addresses
     return processed
@@ -35,6 +35,8 @@ def fetch_ip_list(urls):
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
+            with open("all.txt", 'w', encoding='utf-8') as f:
+                f.write(response.text)
             return response.text.splitlines()
         except RequestException as e:
             print(f"Error fetching from {url}: {e}")
