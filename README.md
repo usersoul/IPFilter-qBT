@@ -1,6 +1,7 @@
 # IP Filter Converter
 
 这是一个Python脚本,用于将IP地址列表转换为特定格式的IP过滤器文件。
+2025-5-26 修复qBittorrent提示IP解析错误的问题。
 
 ## 功能
 
